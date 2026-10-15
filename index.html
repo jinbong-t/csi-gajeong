@@ -12,7 +12,7 @@
   ─────────────────────────────────────────────────────────────
   흐름  M1 UV 얼룩 감식(AR) → 3524 → M2 머플러 라벨·보존함 → 408 → M3 종이 대조 → 공통 앱 4171
   주소  index.html            데모 모드 (카메라 없이 [데모 스캔] 버튼)
-        index.html?ar=1       AR 모드 (태블릿 카메라로 손수건 카드 인식)
+        index.html?ar=1       AR 모드 (신분증 카드로 로그인 → 모둠 자동 인식, 손수건 카드 UV 감식)
         index.html?reset=1    이 태블릿 진행 기록 초기화 (교사용)
   교사  화면 왼쪽 위 KCSI 로고를 5번 연속 누르면 초기화 메뉴
   ★ 문구·정답은 CONFIG 부분만 고치면 됩니다.
@@ -166,6 +166,26 @@ button{font-family:inherit}
 #arwrap{position:fixed;inset:0;z-index:59;display:none}
 #arwrap a-scene{position:absolute;inset:0}
 .ld{font-family:var(--mono);color:#d9c2ff;font-size:13px;text-align:center}
+/* ── AR 로그인 · 홍채 ── */
+#loginHud,#iris{position:fixed;inset:0;z-index:85;display:none}
+#loginHud.show,#iris.show{display:block}
+#loginHud .uvhud .br{border-color:var(--line);filter:drop-shadow(0 0 8px var(--line))}
+.lhtop{position:absolute;left:0;right:0;top:0;padding:14px 18px;display:flex;gap:10px;align-items:center;background:linear-gradient(180deg,rgba(3,10,20,.92),transparent)}
+.lhtop .t{font-family:var(--disp);letter-spacing:.2em;color:var(--line);font-size:14px}
+.lhbox{position:absolute;left:50%;bottom:6%;transform:translateX(-50%);width:min(560px,92%);background:rgba(3,14,30,.88);border:1px solid rgba(25,227,255,.5);padding:14px 16px;text-align:center}
+.lhbox .big{font-family:var(--disp);font-size:24px;letter-spacing:.12em;color:var(--line);margin:4px 0}
+.lhbox .ok{color:var(--ok);text-shadow:0 0 14px var(--ok)}
+.lhsmall{font-family:var(--mono);font-size:12px;color:var(--dim);margin-top:8px;cursor:pointer;text-decoration:underline}
+#iris{background:#020812}
+.iwrap{position:absolute;left:50%;top:45%;transform:translate(-50%,-50%);width:min(70vw,360px);height:min(70vw,360px)}
+.iwrap video{position:absolute;inset:12%;width:76%;height:76%;object-fit:cover;border-radius:50%;transform:scaleX(-1);filter:grayscale(.6) contrast(1.2) brightness(.9);background:#041426}
+.iwrap svg{position:absolute;inset:0;width:100%;height:100%}
+.irot{transform-origin:50% 50%;animation:spin 6s linear infinite}
+.irot2{transform-origin:50% 50%;animation:spin 3.5s linear infinite reverse}
+.iscan{position:absolute;left:12%;right:12%;height:2px;background:var(--line);box-shadow:0 0 14px var(--line);top:12%;animation:iscan 1.2s ease-in-out infinite alternate}
+@keyframes iscan{to{top:88%}}
+.itxt{position:absolute;left:0;right:0;bottom:12%;text-align:center;font-family:var(--mono);color:var(--line);letter-spacing:.14em}
+.itxt b{display:block;font-family:var(--disp);font-size:26px;margin-top:6px}
 /* 반응형 */
 @media (max-width:1000px){ .grid{grid-template-columns:1fr;overflow:auto} .col.side{display:grid;grid-template-columns:1fr 1fr} .log{min-height:110px} }
 @media (max-width:820px){ .uvstage{inset:60px 12px 46% 12px} .uvside{left:12px;right:12px;width:auto;top:auto;height:44%} .col.side{grid-template-columns:1fr} }
@@ -187,6 +207,7 @@ button{font-family:inherit}
         <path d="M20 46c-3-4-4-9-4-14 0-9 7-16 16-16s16 7 16 16"/><path d="M26 50c-3-5-4-10-4-17 0-6 4-10 10-10s10 4 10 10c0 3-1 5-1 8"/>
         <path d="M32 54c-2-5-3-11-3-20 0-2 1-4 3-4s3 2 3 4c0 9 2 15 5 19"/><path d="M38 54c2-3 4-7 4-12"/><path d="M14 38c-1-2-1-4-1-6"/><path d="M48 40c1-3 1-5 1-8"/></svg></div>
     <div class="mono dim" id="fhint" style="font-size:12px;letter-spacing:.15em">지문 센서를 길게 누르세요</div>
+    <button class="btn" id="badgeBtn" style="display:none">◉ 수사관 신분증 스캔</button>
     <div class="granted" id="granted">ACCESS GRANTED</div>
   </div>
 </div>
@@ -232,6 +253,22 @@ button{font-family:inherit}
   <div class="uvside" id="uvside"></div>
 </div>
 <div id="arwrap"></div>
+<div id="loginHud">
+  <div class="uvhud"><div class="br a"></div><div class="br b"></div><div class="br c"></div><div class="br d"></div><div class="cross"></div><div class="beam" style="background:linear-gradient(90deg,transparent,#19e3ff,transparent);box-shadow:0 0 18px #19e3ff"></div></div>
+  <div class="lhtop"><span class="t">ID BADGE AUTHENTICATION</span><span class="mono" id="lhState" style="color:var(--dim);font-size:12px">STEP 1 / 2</span></div>
+  <div class="lhbox"><div class="mono dim" id="lhSub" style="font-size:12px;letter-spacing:.14em">INITIALIZING CAMERA</div><div class="big" id="lhBig">수사관 신분증을 비추세요</div>
+    <div class="scanbar"><i id="lhBar" style="background:var(--line)"></i></div><div class="lhsmall" id="lhFallback">카메라가 안 되나요? (선생님 확인 후 수동 입장)</div></div>
+</div>
+<div id="iris">
+  <div class="lhtop"><span class="t">IRIS VERIFICATION</span><span class="mono" style="color:var(--dim);font-size:12px">STEP 2 / 2</span></div>
+  <div class="iwrap"><svg viewBox="0 0 200 200" style="position:absolute;inset:12%;width:76%;height:76%"><ellipse cx="100" cy="100" rx="78" ry="44" fill="none" stroke="#19e3ff" stroke-width="3"/><circle cx="100" cy="100" r="30" fill="none" stroke="#19e3ff" stroke-width="3"/><circle cx="100" cy="100" r="12" fill="#19e3ff"/><line x1="100" y1="100" x2="128.0" y2="100.0" stroke="#19e3ff" stroke-opacity=".6"/><line x1="100" y1="100" x2="124.2" y2="114.0" stroke="#19e3ff" stroke-opacity=".6"/><line x1="100" y1="100" x2="114.0" y2="124.2" stroke="#19e3ff" stroke-opacity=".6"/><line x1="100" y1="100" x2="100.0" y2="128.0" stroke="#19e3ff" stroke-opacity=".6"/><line x1="100" y1="100" x2="86.0" y2="124.2" stroke="#19e3ff" stroke-opacity=".6"/><line x1="100" y1="100" x2="75.8" y2="114.0" stroke="#19e3ff" stroke-opacity=".6"/><line x1="100" y1="100" x2="72.0" y2="100.0" stroke="#19e3ff" stroke-opacity=".6"/><line x1="100" y1="100" x2="75.8" y2="86.0" stroke="#19e3ff" stroke-opacity=".6"/><line x1="100" y1="100" x2="86.0" y2="75.8" stroke="#19e3ff" stroke-opacity=".6"/><line x1="100" y1="100" x2="100.0" y2="72.0" stroke="#19e3ff" stroke-opacity=".6"/><line x1="100" y1="100" x2="114.0" y2="75.8" stroke="#19e3ff" stroke-opacity=".6"/><line x1="100" y1="100" x2="124.2" y2="86.0" stroke="#19e3ff" stroke-opacity=".6"/></svg><video id="ivid" playsinline muted autoplay style="display:none"></video>
+    <svg viewBox="0 0 200 200"><circle cx="100" cy="100" r="96" fill="none" stroke="#19e3ff" stroke-opacity=".35" stroke-width="1"/>
+      <g class="irot"><circle cx="100" cy="100" r="90" fill="none" stroke="#19e3ff" stroke-width="3" stroke-dasharray="40 18"/></g>
+      <g class="irot2"><circle cx="100" cy="100" r="82" fill="none" stroke="#33ffa6" stroke-width="1.5" stroke-dasharray="6 10"/></g>
+      <path d="M100 4v14M100 182v14M4 100h14M182 100h14" stroke="#19e3ff" stroke-width="2"/></svg>
+    <div class="iscan"></div></div>
+  <div class="itxt" id="itxt">화면 원 안에 눈을 맞추세요<b id="ipct">0%</b></div>
+</div>
 <div id="verdict"><div class="v" id="vtext">VERIFIED</div></div>
 
 <script>
@@ -273,6 +310,8 @@ var STAINS = [
   {k:'C', s:'oil',    x:540, y:425, w:190, c:'#9ff7ff', tm:'21:40', d:'반투명하게 번들거림. 물이 스며들지 않음. 지방 성분 검출.'},
   {k:'D', s:'kimchi', x:675, y:200, w:130, c:'#ff8a3d', tm:'22:05', d:'붉은 주황색. 고추 색소·젓갈 성분 검출.'}
 ];
+/* 모둠 신분증 색 (1~5모둠) */
+var UNIT_COLORS = ['#19e3ff','#33ffa6','#ffcc33','#ff5ad8','#b388ff'];
 /* ===================================================== */
 
 var q=new URLSearchParams(location.search), AR=q.get('ar')==='1';
@@ -304,7 +343,7 @@ setInterval(function(){ if($('app').style.display==='flex'&&Math.random()<.55){ 
 function runBoot(){
   var i=0, box=$('tlines');
   (function next(){
-    if(i>=BOOT_LINES.length){ $('tbar').style.width='100%'; setTimeout(function(){ $('term').style.display='none'; $('auth').style.display='flex'; },500); return; }
+    if(i>=BOOT_LINES.length){ $('tbar').style.width='100%'; setTimeout(function(){ $('term').style.display='none'; $('auth').style.display='flex'; setupAuth(); },500); return; }
     var L=BOOT_LINES[i], d=document.createElement('div'); d.className='l'; box.appendChild(d); var s=L[0], k=0;
     var iv=setInterval(function(){ k+=3; d.textContent=s.slice(0,k); if(k>=s.length){ clearInterval(iv);
       if(L[1]==='ok') d.innerHTML+=' <span class="ok">[ OK ]</span>'; if(L[1]==='w') d.innerHTML+=' <span class="w">[ WARN ]</span>';
@@ -320,8 +359,18 @@ function runBoot(){
     if(p>=1){ done=true; grant(); return; } raf=requestAnimationFrame(loop); }
   f.addEventListener('pointerdown',down); f.addEventListener('pointerup',up); f.addEventListener('pointerleave',up);
 })();
+function setupAuth(){
+  if(!AR) return; // 데모 모드: 지문 인증 그대로
+  $('finger').style.display='none'; $('fhint').style.display='none'; $('selGrp').style.display='none'; $('selGrp').nextElementSibling.style.display='none';
+  $('badgeBtn').style.display='inline-block';
+  $('badgeBtn').onclick=function(){ ac(); st.cls=$('selCls').value; saveS(); startBadgeScan(); };
+}
+function fallbackAuth(){ // 카메라 실패 시: 모둠 선택 + 지문
+  st.badge=false; stopAR(); $('loginHud').classList.remove('show'); $('boot').style.display='flex';
+  $('badgeBtn').style.display='none'; $('finger').style.display='flex'; $('fhint').style.display='block'; $('selGrp').style.display=''; $('selGrp').nextElementSibling.style.display='';
+}
 function grant(){
-  st.cls=$('selCls').value; st.grp=$('selGrp').value; if(!st.start)st.start=Date.now(); saveS();
+  st.cls=$('selCls').value; if(!AR||!st.badge) st.grp=$('selGrp').value; if(!st.start)st.start=Date.now(); saveS();
   $('finger').style.display='none'; $('fhint').style.display='none'; var g=$('granted'); g.style.display='block'; g.classList.add('glitch'); sfx('ok');
   say('수사관 인증 완료.');
   setTimeout(function(){ $('boot').style.display='none'; $('app').style.display='flex'; startApp(); },1600);
@@ -446,6 +495,38 @@ function hankySVG(){
   s+='<g stroke="#2e5a3a" stroke-width="5" fill="none" stroke-linecap="round"><path d="M560,560 l10,-34 l10,22 l10,-22 l10,34"/><path d="M630,528 q-18,-6 -18,8 q0,10 16,12 q16,4 12,14 q-6,10 -22,4"/></g>';
   return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600">'+s+'</svg>';
 }
+/* ---------- 모둠 신분증 그림 (도형만 사용) ---------- */
+function seg7(d,x,y,w,h,c,t){ var M={0:'abcdef',1:'bc',2:'abged',3:'abgcd',4:'fgbc',5:'afgcd'}[d], P={a:[x,y,x+w,y],b:[x+w,y,x+w,y+h/2],c:[x+w,y+h/2,x+w,y+h],d:[x,y+h,x+w,y+h],e:[x,y+h/2,x,y+h],f:[x,y,x,y+h/2],g:[x,y+h/2,x+w,y+h/2]}, o='';
+  M.split('').forEach(function(k){ var p=P[k]; o+='<line x1="'+p[0]+'" y1="'+p[1]+'" x2="'+p[2]+'" y2="'+p[3]+'" stroke="'+c+'" stroke-width="'+t+'" stroke-linecap="round"/>'; }); return o; }
+function badgeSVG(n){
+  var c=UNIT_COLORS[n-1], s='', i;
+  s+='<rect width="800" height="500" rx="28" fill="#0a1a30"/>';
+  // 모둠마다 다른 배경 무늬
+  for(i=0;i<16;i++){ var a=[20,-35,60,-60,0][n-1]; s+='<line x1="'+(i*60-100)+'" y1="500" x2="'+(i*60-100+Math.tan(a*Math.PI/180)*500+180)+'" y2="0" stroke="'+c+'" stroke-opacity=".10" stroke-width="'+(6+n*2)+'"/>'; }
+  s+='<rect x="0" y="0" width="800" height="92" rx="28" fill="'+c+'"/><rect x="0" y="60" width="800" height="32" fill="'+c+'"/>';
+  // 상단 엠블럼(방패+별)과 막대 로고
+  s+='<path d="M40,18 h52 v30 q0,28 -26,38 q-26,-10 -26,-38 z" fill="#0a1a30"/><path d="M66,30 l6,13 l14,1 l-11,9 l4,14 l-13,-8 l-13,8 l4,-14 l-11,-9 l14,-1 z" fill="'+c+'"/>';
+  for(i=0;i<9;i++) s+='<rect x="'+(120+i*22)+'" y="'+(30+(i%3)*6)+'" width="14" height="'+(32-(i%3)*6)+'" fill="#0a1a30"/>';
+  s+='<circle cx="730" cy="46" r="26" fill="none" stroke="#0a1a30" stroke-width="6"/><circle cx="730" cy="46" r="10" fill="#0a1a30"/>';
+  // 사진칸 + 실루엣
+  s+='<rect x="44" y="124" width="200" height="250" rx="10" fill="#122b4a" stroke="'+c+'" stroke-width="4"/><circle cx="144" cy="215" r="52" fill="#2a4a70"/><path d="M64,374 q0,-90 80,-96 q80,6 80,96 z" fill="#2a4a70"/>';
+  // 모둠 고유 엠블럼 (삼각·사각·오각·육각·별)
+  var pts='', k=[3,4,5,6,10][n-1];
+  for(i=0;i<k;i++){ var r=(k===10&&i%2)?38:76, ang=-Math.PI/2+i*2*Math.PI/k; pts+=(620+r*Math.cos(ang)).toFixed(1)+','+(230+r*Math.sin(ang)).toFixed(1)+' '; }
+  s+='<polygon points="'+pts+'" fill="none" stroke="'+c+'" stroke-width="10" stroke-linejoin="round"/><circle cx="620" cy="230" r="18" fill="'+c+'"/>';
+  // 큰 숫자 (7세그먼트)
+  s+=seg7(0,300,140,60,110,c,14)+seg7(n,390,140,60,110,c,14);
+  // 정보 줄(글자 대신 막대)
+  for(i=0;i<3;i++) s+='<rect x="300" y="'+(290+i*28)+'" width="'+[230,180,250][i]+'" height="12" rx="6" fill="#d9f6ff" fill-opacity=".55"/>';
+  // 바코드 (모둠마다 다름)
+  var x=300, seed=n*7919;
+  for(i=0;i<46;i++){ seed=(seed*16807)%2147483647; var w=2+seed%7; if(x+w>760)break; if(i%2===0) s+='<rect x="'+x+'" y="400" width="'+w+'" height="64" fill="#d9f6ff"/>'; x+=w+2; }
+  // 홀로그램 스티커
+  s+='<g transform="translate(150,430)"><circle r="44" fill="none" stroke="'+c+'" stroke-width="3"/><circle r="30" fill="none" stroke="#d9f6ff" stroke-width="2" stroke-dasharray="6 5"/><circle r="'+(8+n*3)+'" fill="'+c+'" fill-opacity=".7"/></g>';
+  s+='<rect x="6" y="6" width="788" height="488" rx="24" fill="none" stroke="'+c+'" stroke-width="5"/>';
+  return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="800" height="500">'+s+'</svg>';
+}
+window.badgeSVG=badgeSVG;
 /* ---------- 얼룩 그림 (SVG 필터로 자연스러운 번짐) ---------- */
 function stainSVG(kind,seed){
   var D='<defs><filter id="r" x="-30%" y="-30%" width="160%" height="160%"><feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="3" seed="'+seed+'" result="n"/>'+
@@ -465,7 +546,7 @@ function prepStains(){ var seeds={gum:3,sweat:11,oil:21,kimchi:31}; return Promi
 /* ---------- UV 스캐너 ---------- */
 var uvDone=false;
 function openUV(){
-  ac(); $('uv').classList.add('show'); sfx('lock'); log('uv scanner online','uv');
+  revealed=false; ac(); $('uv').classList.add('show'); sfx('lock'); log('uv scanner online','uv');
   $('uvside').innerHTML='<div class="scanpct" id="spct">SPECTRAL SCAN 0%</div><div class="scanbar"><i id="sbar"></i></div><div class="uvmsg" id="uvmsg">손수건 카드를 화면 중앙에 비추세요.</div>';
   prepStains().then(function(){
     if(AR){ $('uv').classList.add('ar'); $('uvstage').innerHTML=''; $('uvState').textContent='CAMERA · SEARCHING TARGET'; startAR(); }
@@ -482,7 +563,9 @@ function demoStage(show){
   return '<svg viewBox="0 0 800 600" style="width:100%;height:100%;filter:'+(show?'hue-rotate(250deg) saturate(.55) brightness(.55) contrast(1.2)':'none')+'">'+'<g>'+inner+'</g></svg>'+
          (show?'<svg viewBox="0 0 800 600" style="position:absolute;inset:0;width:100%;height:100%">'+s+'</svg>':'');
 }
+var revealed=false;
 function reveal(){
+  if(revealed) return; revealed=true;
   if(uvDone){ fillStains(true); return; }
   var p=0;
   var t=setInterval(function(){ p+=4; $('sbar').style.width=Math.min(p,100)+'%'; $('spct').textContent='SPECTRAL SCAN '+Math.min(p,100)+'%'; sfx('scan');
@@ -500,46 +583,101 @@ function fillStains(quick){
 function closeUV(){ $('uv').classList.remove('show','ar'); stopAR(); if('speechSynthesis' in window)speechSynthesis.cancel(); }
 $('uvClose').onclick=closeUV;
 
-/* ---------- AR: 손수건 카드 타깃을 이 기기에서 직접 컴파일 (최초 1회, 이후 저장본 사용) ---------- */
+/* ---------- AR: 타깃(손수건+신분증 5장)을 이 기기에서 직접 컴파일 (최초 1회, 이후 저장본 사용)
+   ※ MindAR은 stop() 후 start()하면 인식이 안 되므로 pause()/unpause()만 사용 ---------- */
 var CDN='https://cdn.jsdelivr.net/npm/', arReady=false;
 function loadScript(src){ return new Promise(function(ok,no){ var s=document.createElement('script'); s.src=src; s.onload=ok; s.onerror=no; document.head.appendChild(s); }); }
 function b64(buf){ var s='',b=new Uint8Array(buf); for(var i=0;i<b.length;i+=0x8000) s+=String.fromCharCode.apply(null,b.subarray(i,i+0x8000)); return btoa(s); }
 function unb64(t){ var s=atob(t),b=new Uint8Array(s.length); for(var i=0;i<s.length;i++)b[i]=s.charCodeAt(i); return b; }
-var TKEY='csi-mind-v1';
+var TKEY='csi-mind-v2', arMode='', arReady=false, arLoading=null;
+function setProg(p,label){ var t=label+' '+Math.round(p)+'%';
+  if(arMode==='login'){ $('lhSub').textContent=t; $('lhBar').style.width=Math.round(p)+'%'; } else if($('spct')){ $('spct').textContent=t; $('sbar').style.width=Math.round(p)+'%'; } }
 function getTargets(){
   var saved=null; try{ saved=localStorage.getItem(TKEY); }catch(e){}
   if(saved) return Promise.resolve(URL.createObjectURL(new Blob([unb64(saved)])));
-  $('uvmsg').innerHTML='감식 엔진 초기화 중… (처음 한 번만, 10~30초)';
+  if(arMode==='login'){ $('lhBig').textContent='감식 엔진 초기화 중'; }
+  var svgs=[[hankySVG(),800,600]]; for(var n=1;n<=5;n++) svgs.push([badgeSVG(n),800,500]);
   return import(CDN+'mind-ar@1.2.5/dist/mindar-image.prod.js').then(function(){
-    return svgToPNG(hankySVG(),800,600);
-  }).then(function(png){ return new Promise(function(ok){ var im=new Image(); im.onload=function(){ ok(im); }; im.src=png; }); })
-  .then(function(img){
+    return Promise.all(svgs.map(function(v){ return svgToPNG(v[0],v[1],v[2]).then(function(png){ return new Promise(function(ok){ var im=new Image(); im.onload=function(){ ok(im); }; im.src=png; }); }); }));
+  }).then(function(imgs){
     var comp=new window.MINDAR.IMAGE.Compiler();
-    return comp.compileImageTargets([img],function(p){ $('spct').textContent='ENGINE CALIBRATION '+Math.round(p)+'%'; $('sbar').style.width=Math.round(p)+'%'; })
-      .then(function(){ return comp.exportData(); });
+    return comp.compileImageTargets(imgs,function(p){ setProg(p,'ENGINE CALIBRATION'); }).then(function(){ return comp.exportData(); });
   }).then(function(buf){ try{ localStorage.setItem(TKEY,b64(buf)); }catch(e){} return URL.createObjectURL(new Blob([buf])); });
 }
-function startAR(){
-  $('arwrap').style.display='block';
-  if(arReady){ var sc=document.querySelector('a-scene'); try{ sc.systems['mindar-image-system'].start(); }catch(e){} return; }
-  getTargets().then(function(url){
+function initAR(){
+  if(arLoading) return arLoading;
+  arLoading = prepStains().then(getTargets).then(function(url){
     return loadScript(CDN+'aframe@1.5.0/dist/aframe-v1.5.0.min.js').then(function(){ return loadScript(CDN+'mind-ar@1.2.5/dist/mindar-image-aframe.prod.js'); }).then(function(){ return url; });
   }).then(function(url){
-    arReady=true;
-    var e=''; // 카드 가로 = 1, 세로 = 0.75
+    var e=''; // 손수건: 가로 1, 세로 0.75
     STAINS.forEach(function(a){ var x=(a.x/800-.5).toFixed(3), y=(.375-a.y/800).toFixed(3), w=(a.w/800).toFixed(3);
       e+='<a-image src="'+STAIN_PNG[a.s]+'" width="'+w+'" height="'+w+'" position="'+x+' '+y+' 0.02" material="transparent:true; shader:flat; alphaTest:0.01" '+
          'animation="property: position; to: '+x+' '+y+' 0.07; dir: alternate; loop: true; dur: 1100" animation__glow="property: material.opacity; from: 0.55; to: 1; dir: alternate; loop: true; dur: 800"></a-image>'+
          '<a-text value="'+a.k+'" align="center" color="#ffffff" width="1.6" position="'+(+x+w*.6)+' '+(+y+w*.6)+' 0.06"></a-text>'; });
+    var b=''; // 신분증: 가로 1, 세로 0.625
+    for(var n=1;n<=5;n++){ var c=UNIT_COLORS[n-1];
+      b+='<a-entity class="tgb" data-n="'+n+'" mindar-image-target="targetIndex: '+n+'"><a-entity class="ovB">'+
+         '<a-plane width="1.04" height="0.66" material="color:'+c+'; opacity:0.18; transparent:true; shader:flat"></a-plane>'+
+         '<a-ring radius-inner="0.15" radius-outer="0.17" position="0.225 0.04 0.03" material="color:'+c+'; shader:flat" animation="property: rotation; to: 0 0 360; loop: true; dur: 2500; easing: linear"></a-ring>'+
+         '<a-ring radius-inner="0.2" radius-outer="0.205" position="0.225 0.04 0.03" material="color:#ffffff; shader:flat; opacity:0.7; transparent:true" animation="property: scale; from: 0.8 0.8 0.8; to: 1.2 1.2 1.2; dir: alternate; loop: true; dur: 700"></a-ring>'+
+         '<a-text value="UNIT 0'+n+'  VERIFIED" align="center" color="'+c+'" width="1.4" position="0 0.42 0.05"></a-text></a-entity></a-entity>'; }
     $('arwrap').innerHTML='<a-scene mindar-image="imageTargetSrc: '+url+'; maxTrack: 1; uiScanning: no; uiLoading: no; filterMinCF: 0.0001; filterBeta: 0.001" color-space="sRGB" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false" embedded>'+
-      '<a-camera position="0 0 0" look-controls="enabled: false"></a-camera><a-entity id="tg" mindar-image-target="targetIndex: 0">'+
-      '<a-plane width="1" height="0.75" material="color:#5a1fd0; opacity:0.35; transparent:true; shader:flat"></a-plane>'+e+'</a-entity></a-scene>';
-    $('uvmsg').innerHTML='손수건 카드를 화면 중앙에 비추세요.';
-    $('tg').addEventListener('targetFound',function(){ $('uvState').textContent='TARGET LOCKED'; sfx('lock'); log('uv target locked','uv'); reveal(); });
-    $('tg').addEventListener('targetLost',function(){ $('uvState').textContent='TARGET LOST · 다시 비추세요'; });
-  }).catch(function(err){ console.error(err); $('uvmsg').innerHTML='<span style="color:#ff3b5c">AR을 시작하지 못했습니다.</span><br>인터넷 연결과 카메라 권한을 확인하고, 안 되면 선생님께 백업 카드를 요청하세요.'; log('ar init failed','bad'); });
+      '<a-camera position="0 0 0" look-controls="enabled: false"></a-camera><a-entity id="tg" mindar-image-target="targetIndex: 0"><a-entity id="ovH">'+
+      '<a-plane width="1" height="0.75" material="color:#5a1fd0; opacity:0.35; transparent:true; shader:flat"></a-plane>'+e+'</a-entity></a-entity>'+b+'</a-scene>';
+    $('tg').addEventListener('targetFound',function(){ if(arMode!=='uv')return; $('uvState').textContent='TARGET LOCKED'; sfx('lock'); log('uv target locked','uv'); reveal(); });
+    $('tg').addEventListener('targetLost',function(){ if(arMode==='uv') $('uvState').textContent='TARGET LOST · 다시 비추세요'; });
+    Array.prototype.forEach.call(document.querySelectorAll('.tgb'),function(el){ el.addEventListener('targetFound',function(){ if(arMode==='login') onBadge(+el.dataset.n); }); });
+    return new Promise(function(ok){ var sc=document.querySelector('a-scene'); if(sc.hasLoaded) ok(); else sc.addEventListener('loaded',ok); });
+  }).then(function(){ arReady=true; applyMode(); });
+  return arLoading;
 }
-function stopAR(){ var sc=document.querySelector('a-scene'); try{ if(sc) sc.systems['mindar-image-system'].stop(); }catch(e){} $('arwrap').style.display='none'; }
+var wantMode='';
+function applyMode(){ var sc=document.querySelector('a-scene'); if(!sc)return; setARMode(wantMode); try{ if(wantMode){ $('arwrap').style.display='block'; } else { sc.systems['mindar-image-system'].pause(); $('arwrap').style.display='none'; } }catch(e){} }
+function setARMode(m){ arMode=m; // 타깃 자체가 아니라 안쪽 장식만 숨김 (타깃 visible을 건드리면 인식 이벤트가 안 옴)
+  var t=document.getElementById('ovH'); if(t) t.setAttribute('visible', m==='uv');
+  Array.prototype.forEach.call(document.querySelectorAll('.ovB'),function(el){ el.setAttribute('visible', m==='login'); }); }
+// 모드를 바꿀 때 이미 추적 중인 카드가 있으면 바로 처리 (인식 이벤트를 놓친 경우 대비)
+function checkTracked(){
+  if(arMode==='uv'){ var t=document.getElementById('tg'); if(t&&t.object3D&&t.object3D.visible){ $('uvState').textContent='TARGET LOCKED'; reveal(); } }
+  if(arMode==='login'){ Array.prototype.forEach.call(document.querySelectorAll('.tgb'),function(el){ if(el.object3D&&el.object3D.visible) onBadge(+el.dataset.n); }); }
+}
+setInterval(function(){ if(arReady&&arMode&&wantMode) checkTracked(); },700);
+function startAR(){
+  wantMode='uv'; setARMode('uv'); $('arwrap').style.display='block';
+  if(arReady){ try{ document.querySelector('a-scene').systems['mindar-image-system'].unpause(); }catch(e){} return; }
+  initAR().then(function(){ if(wantMode==='uv') $('uvmsg').innerHTML='손수건 카드를 화면 중앙에 비추세요.'; })
+  .catch(function(err){ console.error(err); arLoading=null; $('uvmsg').innerHTML='<span style="color:#ff3b5c">AR을 시작하지 못했습니다.</span><br>인터넷 연결과 카메라 권한을 확인하고, 안 되면 선생님께 백업 카드를 요청하세요.'; log('ar init failed','bad'); });
+}
+/* ---------- 로그인: 신분증 스캔 → 홍채 연출 ---------- */
+var badgeDone=false;
+function startBadgeScan(){
+  wantMode='login'; setARMode('login'); badgeDone=false; $('boot').style.display='none'; $('loginHud').classList.add('show'); $('arwrap').style.display='block';
+  $('lhBig').textContent='수사관 신분증을 비추세요'; $('lhBig').className='big'; $('lhSub').textContent='CAMERA ONLINE · SEARCHING ID'; $('lhState').textContent='STEP 1 / 2';
+  $('lhFallback').onclick=fallbackAuth;
+  if(arReady){ try{ document.querySelector('a-scene').systems['mindar-image-system'].unpause(); }catch(e){} return; }
+  initAR().then(function(){ if(wantMode!=='login')return; $('lhBig').textContent='수사관 신분증을 비추세요'; $('lhSub').textContent='CAMERA ONLINE · SEARCHING ID'; $('lhBar').style.width='0'; })
+  .catch(function(err){ console.error(err); arLoading=null; $('lhBig').textContent='카메라를 시작하지 못했습니다'; $('lhSub').textContent='아래 수동 입장을 선생님과 함께 진행하세요'; });
+}
+function onBadge(n){
+  if(badgeDone) return; badgeDone=true; sfx('ok');
+  st.grp=String(n); st.badge=true; saveS();
+  $('lhSub').textContent='ID MATCH · '+st.cls+'반'; $('lhBig').innerHTML='<span class="ok">UNIT 0'+n+' · 수사관 신원 일치</span>'; $('lhBar').style.width='100%';
+  say(n+'모둠 수사관 신원이 확인되었다. 홍채 인증을 진행한다.');
+  setTimeout(function(){ stopAR(); $('loginHud').classList.remove('show'); startIris(); },1800);
+}
+function startIris(){
+  $('iris').classList.add('show'); var v=$('ivid'), stream=null, p=0;
+  if(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia){
+    navigator.mediaDevices.getUserMedia({video:{facingMode:'user'},audio:false}).then(function(s){ stream=s; v.srcObject=s; v.style.display='block'; }).catch(function(){});
+  }
+  var t=setInterval(function(){ p+=Math.random()*6+2; if(p>100)p=100; $('ipct').textContent=(p<100?p.toFixed(1):'100')+'%'; if(Math.random()<.5)sfx('scan');
+    if(p>=40&&p<42) $('itxt').firstChild.textContent='홍채 패턴 대조 중';
+    if(p>=100){ clearInterval(t); $('itxt').firstChild.textContent='IRIS MATCH · 일치율 99.2%'; sfx('ok');
+      setTimeout(function(){ if(stream) stream.getTracks().forEach(function(k){k.stop()}); $('iris').classList.remove('show'); $('boot').style.display='flex'; $('term').style.display='none'; $('auth').style.display='flex'; $('badgeBtn').style.display='none'; grant(); },900); } },120);
+}
+function stopAR(){ wantMode=''; var sc=document.querySelector('a-scene'); try{ if(sc) sc.systems['mindar-image-system'].pause(); }catch(e){}
+  // 다시 켰을 때 같은 카드도 '새로 인식'되도록 추적 상태를 지움
+  Array.prototype.forEach.call(document.querySelectorAll('[mindar-image-target]'),function(el){ if(el.object3D) el.object3D.visible=false; }); $('arwrap').style.display='none'; }
 
 /* ---------- 교사용: 로고 5번 → 초기화 ---------- */
 (function(){ var n=0,t=0; $('logo').onclick=function(){ var now=Date.now(); n=(now-t<700)?n+1:1; t=now;
