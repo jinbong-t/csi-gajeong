@@ -1,2 +1,33 @@
-# csi-gajeong
-PROJECT: THE UNDERGROUND · Room 5 가정실 사이버 수사 단말기 (UV 얼룩 감식 AR)
+# KCSI · CSI 가정 분석실 (ZONE E 잔류 성분 분석실)
+
+PROJECT: THE UNDERGROUND 교과 융합 방탈출의 **Room 5 [가정]** 전용 수사 단말기 웹앱입니다.
+
+## 접속 주소 (GitHub Pages를 켠 뒤)
+
+| 용도 | 주소 |
+| --- | --- |
+| 수업용 (AR, 태블릿 카메라) | `https://jinbong-t.github.io/csi-gajeong/?ar=1` |
+| 데모 (카메라 없이 확인) | `https://jinbong-t.github.io/csi-gajeong/` |
+| 태블릿 진행 기록 초기화 | 주소 뒤에 `?reset=1` 또는 화면 왼쪽 위 KCSI 로고 5번 연속 터치 |
+
+## 미션 흐름
+
+1. 지문 인증 → 사건 브리핑
+2. **M-01 UV 얼룩 감식 (AR)**: 손수건 카드를 비추면 얼룩 4개가 떠오름 → 얼룩 제거법 번호를 생성 시각 순으로 → `3524`
+3. **M-02 섬유 증거 보존**: 머플러 세탁 라벨로 보존함 자물쇠를 열고 같은 번호 입력 → `408`
+4. **M-03 잔류 성분 대조**: 종이 분석 결과서 + 음료 표본 카드 → 공통 수사 앱에 `4171`
+
+## 수업 전 준비
+
+- 손수건 카드는 인쇄자료 PDF의 그림을 **크기 조절 없이, 무광 코팅**으로 준비합니다. 앱이 같은 그림을 기준으로 인식합니다.
+- 태블릿마다 **한 번 미리 AR 모드를 실행**해 두세요. 첫 실행 때 기기에서 인식 엔진을 준비(10~30초)하고, 이후에는 저장본을 씁니다.
+- 카메라 권한을 허용해야 합니다. 인터넷 연결이 필요합니다(jsDelivr CDN 사용).
+- AR이 안 되면 교사용 백업 UV 감식 결과 카드를 전달합니다.
+
+## 고치는 곳
+
+`index.html`의 `CONFIG` 부분(브리핑 문구, 미션 문구, 정답, 얼룩 설명)만 바꾸면 됩니다.
+
+## GitHub Pages 켜기 (처음 한 번)
+
+저장소 **Settings → Pages → Build and deployment → Source: Deploy from a branch → Branch: `main` / `(root)` → Save**. 1~2분 뒤 위 주소로 접속됩니다.
