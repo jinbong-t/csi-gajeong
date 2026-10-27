@@ -359,10 +359,10 @@ var MISSIONS = [
   { code:'M-01', tag:'MISSION 01 // UV FIBER FORENSICS', title:'보이지 않는 얼룩', track:'UV 얼룩 감식',
     lines:['분석대 위 손수건은 맨눈으로 보면 깨끗하다.','그러나 UV 감식을 하면 숨겨진 얼룩이 드러난다.',
            '<span class="hl">UV 스캐너</span>로 손수건 카드를 비추고, 섬유 감식반 매뉴얼에서 얼룩마다 알맞은 제거법을 찾아라.',
-           '제거법 번호를 <span class="hl">얼룩이 생긴 시각 순서대로</span> 이어 입력하라.'],
-    uv:true, answer:'3524', ok:'정답. 침입자는 밤 9시 40분부터 이 손수건을 지니고 있었다.' },
+           '제거법 번호를 <span class="hl">얼룩 번호 순서(㉠ → ㉡ → ㉢ → ㉣)대로</span> 이어 입력하라.'],
+    uv:true, answer:'3524', ok:'정답. 손수건 얼룩 감식 완료. 다음 유류품을 확인하라.' },
   { code:'M-02', tag:'MISSION 02 // FIBER EVIDENCE SEAL', title:'증거 보존함을 열어라', track:'섬유 증거 보존',
-    lines:['텀블러는 머플러에 싸인 채 증거 보존함에 봉인되어 있다.','감식 규정 제5조에 따라 <span class="hl">머플러 라벨의 세탁 기호</span>를 판독하라.',
+    lines:['텀블러는 증거 보존함에 봉인되어 있고, 보존함은 머플러로 감싸져 있다.','감식 규정 제5조에 따라 <span class="hl">머플러 라벨의 세탁 기호</span>를 판독하라.',
            '보존함을 연 비밀번호를 이 단말기에도 입력하라.'],
     answer:'408', ok:'보존함 개봉 확인. 마지막 지시를 전송한다.' },
   { code:'M-03', tag:'MISSION 03 // RESIDUE CROSS-MATCH', title:'침입자가 마신 음료', track:'잔류 성분 대조',
@@ -371,12 +371,12 @@ var MISSIONS = [
     final:true }
 ];
 var LOCKERS = [ ['손수건','HANDKERCHIEF · UV'], ['증거 보존함','EVIDENCE SEAL · 408'], ['음료 표본 6종','RESIDUE SAMPLES'] ];
-/* 얼룩: 손수건 카드(800×600) 위 위치·크기, 생성 시각, 감식 문구 */
+/* 얼룩 ㉠~㉣: 손수건 카드(800×600) 위 위치·크기, 감식 문구 (번호 순으로 읽음) */
 var STAINS = [
-  {k:'A', s:'gum',    x:175, y:400, w:150, c:'#ff5ad8', tm:'23:05', d:'섬유 사이에 끈적하게 엉겨 붙음. 고무·당류 성분 검출.'},
-  {k:'B', s:'sweat',  x:375, y:238, w:170, c:'#f7e36b', tm:'22:48', d:'누런 테두리. 염분·단백질 성분 검출.'},
-  {k:'C', s:'oil',    x:540, y:425, w:190, c:'#9ff7ff', tm:'21:40', d:'반투명하게 번들거림. 물이 스며들지 않음. 지방 성분 검출.'},
-  {k:'D', s:'kimchi', x:675, y:200, w:130, c:'#ff8a3d', tm:'22:05', d:'붉은 주황색. 고추 색소·젓갈 성분 검출.'}
+  {k:'㉠', sp:'기역', s:'oil',    x:540, y:425, w:190, c:'#9ff7ff', d:'반투명하게 번들거림. 물이 스며들지 않음. 지방 성분 검출.'},
+  {k:'㉡', sp:'니은', s:'kimchi', x:675, y:200, w:130, c:'#ff8a3d', d:'붉은 주황색. 고추 색소·젓갈 성분 검출.'},
+  {k:'㉢', sp:'디귿', s:'sweat',  x:375, y:238, w:170, c:'#f7e36b', d:'누런 테두리. 염분·단백질 성분 검출.'},
+  {k:'㉣', sp:'리을', s:'gum',    x:175, y:400, w:150, c:'#ff5ad8', d:'섬유 사이에 끈적하게 엉겨 붙음. 고무·당류 성분 검출.'}
 ];
 /* 교사용 콘솔 비밀번호 (로고 5번 터치 또는 주소 뒤 ?teacher=1) */
 var TEACHER_PIN = '1120';
@@ -598,7 +598,7 @@ function badgeSVG(n){
 }
 window.badgeSVG=badgeSVG;
 /* ---------- 얼룩 그림 (SVG 필터로 자연스러운 번짐) ---------- */
-function stainSVG(kind,seed){
+function stainSVG(kind,seed,lab){
   var D='<defs><filter id="r" x="-30%" y="-30%" width="160%" height="160%"><feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="3" seed="'+seed+'" result="n"/>'+
     '<feDisplacementMap in="SourceGraphic" in2="n" scale="38" xChannelSelector="R" yChannelSelector="G" result="d"/><feGaussianBlur in="d" stdDeviation="1.4"/></filter>'+
     '<filter id="g" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="12"/></filter></defs>', B='';
@@ -606,12 +606,13 @@ function stainSVG(kind,seed){
   if(kind==='sweat') B='<g filter="url(#g)" opacity=".55"><circle cx="128" cy="128" r="74" fill="#f7e36b"/></g><g filter="url(#r)"><circle cx="128" cy="128" r="70" fill="#f7e36b" opacity=".22"/><circle cx="128" cy="128" r="66" fill="none" stroke="#ffe34a" stroke-width="9" opacity=".95"/><circle cx="128" cy="128" r="54" fill="none" stroke="#fff3a0" stroke-width="3" opacity=".5"/></g>';
   if(kind==='oil') B='<g filter="url(#g)" opacity=".6"><ellipse cx="128" cy="128" rx="84" ry="62" fill="#7ff3ff"/></g><g filter="url(#r)"><ellipse cx="128" cy="128" rx="80" ry="58" fill="#9ff7ff" opacity=".45"/><ellipse cx="128" cy="128" rx="78" ry="56" fill="none" stroke="#5be9ff" stroke-width="5" opacity=".9"/><ellipse cx="108" cy="112" rx="30" ry="10" fill="#fff" opacity=".45" transform="rotate(-18 108 112)"/></g>';
   if(kind==='kimchi') B='<g filter="url(#g)" opacity=".65"><circle cx="128" cy="128" r="58" fill="#ff7a2e"/></g><g filter="url(#r)"><circle cx="128" cy="128" r="48" fill="#ff8a3d" opacity=".92"/><circle cx="192" cy="96" r="11" fill="#ff8a3d"/><circle cx="62" cy="168" r="9" fill="#ff8a3d"/><circle cx="186" cy="176" r="6" fill="#ff8a3d"/><circle cx="84" cy="70" r="7" fill="#ff8a3d"/><circle cx="140" cy="140" r="20" fill="#d9431a" opacity=".5"/></g>';
-  return '<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">'+D+B+'</svg>';
+  var L=lab?'<circle cx="222" cy="34" r="28" fill="#14062e" stroke="#fff" stroke-width="4"/><text x="222" y="47" font-size="36" font-weight="900" text-anchor="middle" fill="#fff" font-family="Noto Sans KR,sans-serif">'+lab+'</text>':'';
+  return '<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">'+D+B+L+'</svg>';
 }
 function svgToPNG(svg,w,h){ return new Promise(function(ok,no){ var img=new Image(); img.onload=function(){ var c=document.createElement('canvas'); c.width=w; c.height=h; c.getContext('2d').drawImage(img,0,0,w,h); ok(c.toDataURL('image/png')); };
   img.onerror=no; img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg); }); }
-var STAIN_PNG={};
-function prepStains(){ var seeds={gum:3,sweat:11,oil:21,kimchi:31}; return Promise.all(STAINS.map(function(a){ return svgToPNG(stainSVG(a.s,seeds[a.s]),256,256).then(function(u){ STAIN_PNG[a.s]=u; }); })); }
+var STAIN_PNG={}, STAIN_AR={};
+function prepStains(){ var seeds={gum:3,sweat:11,oil:21,kimchi:31}; return Promise.all(STAINS.map(function(a){ return svgToPNG(stainSVG(a.s,seeds[a.s]),256,256).then(function(u){ STAIN_PNG[a.s]=u; return svgToPNG(stainSVG(a.s,seeds[a.s],a.k),256,256); }).then(function(u){ STAIN_AR[a.s]=u; }); })); }
 
 /* ---------- UV 스캐너 ---------- */
 var uvDone=false;
@@ -643,12 +644,12 @@ function reveal(){
 }
 function fillStains(quick){
   $('uvState').textContent='4 RESIDUES DETECTED'; $('spct').textContent='SPECTRAL SCAN COMPLETE'; $('sbar').style.width='100%';
-  var h=''; STAINS.forEach(function(a){ h+='<div class="st"><span class="k" style="color:'+a.c+'">'+a.k+'</span><span class="tm">생성 추정 '+a.tm+'</span><br>'+a.d+'</div>'; });
-  $('uvmsg').innerHTML='매뉴얼에서 얼룩마다 제거법을 찾고, 생성 시각 순서대로 번호를 이어라.';
+  var h=''; STAINS.forEach(function(a){ h+='<div class="st"><span class="k" style="color:'+a.c+'">'+a.k+'</span><br>'+a.d+'</div>'; });
+  $('uvmsg').innerHTML='매뉴얼에서 얼룩마다 제거법을 찾고, 얼룩 번호 순서(㉠→㉣)대로 번호를 이어라.';
   $('uvside').insertAdjacentHTML('beforeend',h);
   Array.prototype.forEach.call(document.querySelectorAll('.st'),function(e,i){ setTimeout(function(){ e.classList.add('in'); sfx('lock'); },quick?0:300*i); });
   log('uv: 4 residues detected (A,B,C,D)','uv');
-  if(!quick) say('숨겨진 얼룩 네 개 검출. '+STAINS.map(function(a){ return '얼룩 '+a.k+'. 생성 추정 '+a.tm.replace(':','시 ')+'분. '+a.d; }).join(' '));
+  if(!quick) say('숨겨진 얼룩 네 개 검출. '+STAINS.map(function(a){ return '얼룩 '+a.sp+'. '+a.d; }).join(' '));
 }
 function closeUV(){ $('uv').classList.remove('show','ar'); stopAR(); if('speechSynthesis' in window)speechSynthesis.cancel();
   if(tcTest==='uv'){ var ok=uvDone; uvDone=false; revealed=false; tcEndTest(ok?'✓ UV 스캔 시험 성공: 손수건 카드 인식, 얼룩 4개 표시':'UV 스캔 시험 종료 (인식 전에 닫음)'); } }
@@ -682,9 +683,8 @@ function initAR(){
   }).then(function(url){
     var e=''; // 손수건: 가로 1, 세로 0.75
     STAINS.forEach(function(a){ var x=(a.x/800-.5).toFixed(3), y=(.375-a.y/800).toFixed(3), w=(a.w/800).toFixed(3);
-      e+='<a-image src="'+STAIN_PNG[a.s]+'" width="'+w+'" height="'+w+'" position="'+x+' '+y+' 0.02" material="transparent:true; shader:flat; alphaTest:0.01" '+
-         'animation="property: position; to: '+x+' '+y+' 0.07; dir: alternate; loop: true; dur: 1100" animation__glow="property: material.opacity; from: 0.55; to: 1; dir: alternate; loop: true; dur: 800"></a-image>'+
-         '<a-text value="'+a.k+'" align="center" color="#ffffff" width="1.6" position="'+(+x+w*.6)+' '+(+y+w*.6)+' 0.06"></a-text>'; });
+      e+='<a-image src="'+STAIN_AR[a.s]+'" width="'+w+'" height="'+w+'" position="'+x+' '+y+' 0.02" material="transparent:true; shader:flat; alphaTest:0.01" '+
+         'animation="property: position; to: '+x+' '+y+' 0.07; dir: alternate; loop: true; dur: 1100" animation__glow="property: material.opacity; from: 0.55; to: 1; dir: alternate; loop: true; dur: 800"></a-image>'; });
     var b=''; // 신분증: 가로 1, 세로 0.625
     for(var n=1;n<=5;n++){ var c=UNIT_COLORS[n-1];
       b+='<a-entity class="tgb" data-n="'+n+'" mindar-image-target="targetIndex: '+n+'"><a-entity class="ovB">'+
@@ -783,7 +783,7 @@ function buildTC(){
    '<h3>① 전체 흐름 빠르게 보기 (카메라 없이, 5분)</h3><ol>'+
    '<li><b class="c">진행 조작</b> 탭 → <b class="y">데모 모드로 다시 열기</b> (카메라 대신 [데모 스캔] 버튼이 나옵니다)</li>'+
    '<li>반 선택 → 지문 센서를 길게 누르기 → 브리핑 → <b class="c">첫 번째 지시 수신</b></li>'+
-   '<li>미션 1: [UV 스캐너 가동] → [데모 스캔] → 얼룩 A~D 확인 → <b class="y">3524</b> 입력 (일부러 틀린 번호도 넣어 ACCESS DENIED 확인)</li>'+
+   '<li>미션 1: [UV 스캐너 가동] → [데모 스캔] → 얼룩 ㉠~㉣ 확인 → <b class="y">3524</b> 입력 (일부러 틀린 번호도 넣어 ACCESS DENIED 확인)</li>'+
    '<li>미션 2: <b class="y">408</b> 입력 → 미션 3 지시 확인 → [지시 확인 완료] → 완료 화면</li>'+
    '<li>중간 화면만 보고 싶으면 <b class="c">진행 조작</b> 탭의 <b class="y">미션 바로가기</b>를 쓰세요.</li></ol>'+
    '<h3>② AR(카메라) 시험 — 인쇄 전에도 가능</h3><ol>'+
@@ -844,8 +844,8 @@ function buildTC(){
   /* 4. 정답·해설 */
   $('tc-ans').innerHTML='<table class="tctable"><tr><th>단계</th><th>정답</th><th>푸는 법</th></tr>'+
    '<tr><td>입장</td><td class="ans">신분증</td><td>모둠 신분증 카드(1~5)를 비추면 모둠 자동 인식 → 홍채 연출. 안 되면 [수동 입장]: 반·모둠 선택 + 지문 길게 누르기</td></tr>'+
-   '<tr><td>미션 1<br>UV 얼룩</td><td class="ans">3524</td><td>UV로 드러난 얼룩: '+STAINS.map(function(a){return a.k+' '+a.tm;}).join(', ')+'<br>시각 순서 C(21:40) → D(22:05) → B(22:48) → A(23:05) 로 매뉴얼의 제거법 번호를 이어 3 · 5 · 2 · 4<br><span class="dim">함정: A→D 순서로 읽으면 4235</span></td></tr>'+
-   '<tr><td>미션 2<br>세탁 라벨</td><td class="ans">408</td><td>머플러 라벨 기호(다림질 80~120℃ · 물세탁 금지 · 염소표백 금지)를 암호표에서 찾아 <b>세탁 → 표백 → 다림질</b> 순서로 4 · 0 · 8. 보존함(금고 통) 비밀번호와 같음<br><span class="dim">함정: 라벨의 "아크릴 100%"</span></td></tr>'+
+   '<tr><td>미션 1<br>UV 얼룩</td><td class="ans">3524</td><td>㉠ 식용유 → 3 주방세제 / ㉡ 김칫국물 → 5 세제·햇볕 / ㉢ 땀 → 2 찬물·세제 / ㉣ 껌 → 4 얼음<br>얼룩 번호 순(㉠→㉣)으로 3 · 5 · 2 · 4<br><span class="dim">막다른 길: 제거법 1·6·7·8 (땀에 뜨거운 물을 쓰면 얼룩이 굳음)</span></td></tr>'+
+   '<tr><td>미션 2<br>세탁 라벨</td><td class="ans">408</td><td>머플러 라벨 기호(물세탁 금지 · 염소표백 금지 · 다림질 80~120℃)를 암호표에서 찾아 <b>라벨 표시 순서대로</b> 4 · 0 · 8. 보존함(금고 통) 비밀번호와 같음<br><span class="dim">함정: 라벨의 "아크릴 100%"</span></td></tr>'+
    '<tr><td>미션 3<br>음료 대조</td><td class="ans">4171</td><td>잔여액 분석 결과서 조건과 같은 표본을 찾고(기준량 환산 주의) 로고 속 숨은 숫자를 표본 번호 순서대로 이음. 이 숫자는 <b>공통 수사 앱</b>에 입력 → 증거 #05 봉투</td></tr></table>'+
    '<p class="dim" style="font-size:13px;margin-top:10px">학생 화면에 정답이 보이지 않도록, 확인 후 바로 콘솔을 닫으세요.</p>';
 
