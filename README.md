@@ -8,7 +8,8 @@ PROJECT: THE UNDERGROUND 교과 융합 방탈출의 **Room 5 [가정]** 전용 �
 | --- | --- |
 | 수업용 (AR, 태블릿 카메라) | `https://jinbong-t.github.io/csi-gajeong/?ar=1` |
 | 데모 (카메라 없이 확인) | `https://jinbong-t.github.io/csi-gajeong/` |
-| 태블릿 진행 기록 초기화 | 주소 뒤에 `?reset=1` 또는 화면 왼쪽 위 KCSI 로고 5번 연속 터치 |
+| 태블릿 진행 기록 초기화 (빠르게) | 화면 왼쪽 위 **KCSI 로고 5번 연속 터치 → [초기화]** (또는 주소 뒤에 `?reset=1`) |
+| 교사 콘솔 | 왼쪽 AGENT 아래 **[🔒 교사 콘솔]** 버튼 → 비밀번호 (로그인 화면에서는 KCSI 제목 5번) |
 
 ## 입장 (AR 모드)
 
