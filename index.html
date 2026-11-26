@@ -10,7 +10,7 @@
 <!--
   PROJECT: THE UNDERGROUND · Room 5 [가정] 전용 수사 단말기 (CSI 가정 분석실)
   ─────────────────────────────────────────────────────────────
-  흐름  M1 UV 얼룩 감식(AR) → 3524 → M2 머플러 라벨·보존함 → 408 → M3 종이 대조 → 공통 앱 4171
+  흐름  CH.1 보이지 않는 얼룩(AR) → 3524 → CH.2 증거 보존함(머플러 라벨) → 408 → CH.3 침입자가 마신 음료(종이 대조) → 공통 앱 4171
   주소  index.html            데모 모드 (카메라 없이 [데모 스캔] 버튼)
         index.html?ar=1       AR 모드 (신분증 카드로 로그인 → 모둠 자동 인식, 손수건 카드 UV 감식)
         index.html?reset=1    이 태블릿 진행 기록 초기화 (교사용)
@@ -246,7 +246,7 @@ button{font-family:inherit}
   <div id="auth">
     <h1 class="glow">KCSI<small>KOREA CYBER SCIENCE INVESTIGATION</small></h1>
     <div class="mono dim" style="letter-spacing:.2em">ZONE E · 잔류 성분 분석실 단말기</div>
-    <div class="sel"><select id="selCls"><option>A</option><option>B</option><option>C</option><option>D</option></select><span>반</span>
+    <div class="sel"><select id="selCls"><option>1</option><option>2</option><option>3</option><option>4</option></select><span>반</span>
       <select id="selGrp"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select><span>모둠</span></div>
     <div class="finger" id="finger"><div class="fill" id="ffill"></div><div class="ring"></div>
       <svg viewBox="0 0 64 64" fill="none" stroke="#19e3ff" stroke-width="2.2" stroke-linecap="round">
@@ -263,7 +263,7 @@ button{font-family:inherit}
   <div class="topbar">
     <div class="logo" id="logo">KCSI<small>ZONE E · RESIDUE LAB</small></div>
     <div class="sp"></div>
-    <div class="stat"><span class="rec"></span>CASE <b>#UG-1215</b><br><span id="clock">--:--:--</span></div>
+    <div class="stat"><span class="rec"></span>CASE <b>1926-14</b><br><span id="clock">--:--:--</span></div>
     <div class="chip" id="voiceBtn">VOICE ON</div>
     <div class="chip" id="replay">REPLAY</div>
   </div>
@@ -346,28 +346,30 @@ var BOOT_LINES = [
   ['> mounting /zone-e/residue-lab ............','ok'],
   ['> loading module: fiber_uv_scanner ........','ok'],
   ['> loading module: nutrition_crossmatch ....','ok'],
-  ['> linking case file #UG-1215 (지하 비밀 서고 침입) ','ok'],
+  ['> linking case file 1926-14 (봉인된 금고와 그림자 도둑) ','ok'],
   ['> power grid: EMERGENCY (23:02 blackout logged)','w'],
   ['> awaiting investigator authentication ...','']
 ];
 var BRIEFING = [
-  '수사관, 잔류 성분 분석실에 온 것을 환영한다.',
-  '어젯밤 11시경 침입자는 도주하면서 <span class="hl">손수건</span>과 <span class="hl">보온 텀블러</span>를 떨어뜨렸다.',
-  '이 단말기의 지시에 따라 유류품을 하나씩 감식하라. 모든 판단은 증거로만 내린다.'
+  '오늘 당신은 <span class="hl">잔류 성분 감식관</span>이 되었다. ROOM 05 가정실, 잔류 성분 분석실에 온 것을 환영한다.',
+  '어젯밤 23시경 침입자는 금고를 열다 비상벨이 울리자 급히 도망치며 <span class="hl">손수건</span>과 <span class="hl">보온 텀블러</span>를 떨어뜨렸다.',
+  '손수건에는 맨눈에 보이지 않는 얼룩이, 텀블러에는 마시다 남은 음료가 남아 있다. 텀블러는 머플러로 감싼 증거 보존함에 봉인되어 있다.',
+  '<span class="hl">MISSION 05 · 침입자가 마신 음료의 조건을 밝혀라.</span> 얼룩 → 세탁 라벨 → 음료 순서로 감식하고, 마지막 4자리 숫자는 공통 수사 앱에 입력한다.',
+  '감식관의 메모: “옷과 음식에 남은 흔적은 거짓말을 하지 않는다. 라벨과 영양정보는 끝까지 읽어라.”'
 ];
 var MISSIONS = [
-  { code:'M-01', tag:'MISSION 01 // UV FIBER FORENSICS', title:'보이지 않는 얼룩', track:'UV 얼룩 감식',
-    lines:['분석대 위 손수건은 맨눈으로 보면 깨끗하다.','그러나 UV 감식을 하면 숨겨진 얼룩이 드러난다.',
-           '<span class="hl">UV 스캐너</span>로 손수건 카드를 비추고, 섬유 감식반 매뉴얼에서 얼룩마다 알맞은 제거법을 찾아라.',
+  { code:'CH.1', tag:'CH.1 // UV FIBER FORENSICS', title:'보이지 않는 얼룩', track:'보이지 않는 얼룩',
+    lines:['분석대 위 손수건은 맨눈으로 보면 깨끗하다.','그러나 UV 스캐너로 비추면 숨은 얼룩 ㉠~㉣이 드러난다.',
+           '<span class="hl">UV 스캐너</span>로 손수건 카드를 비추고, 섬유 감식반 매뉴얼에서 얼룩마다 알맞은 제거법 번호를 찾아라. 쓰면 안 되는 제거법도 섞여 있다.',
            '제거법 번호를 <span class="hl">얼룩 번호 순서(㉠ → ㉡ → ㉢ → ㉣)대로</span> 이어 입력하라.'],
     uv:true, answer:'3524', ok:'정답. 손수건 얼룩 감식 완료. 다음 유류품을 확인하라.' },
-  { code:'M-02', tag:'MISSION 02 // FIBER EVIDENCE SEAL', title:'증거 보존함을 열어라', track:'섬유 증거 보존',
-    lines:['텀블러는 증거 보존함에 봉인되어 있고, 보존함은 머플러로 감싸져 있다.','감식 규정 제5조에 따라 <span class="hl">머플러 라벨의 세탁 기호</span>를 판독하라.',
+  { code:'CH.2', tag:'CH.2 // FIBER EVIDENCE SEAL', title:'증거 보존함을 열어라', track:'증거 보존함을 열어라',
+    lines:['텀블러는 증거 보존함에 봉인되어 있고, 보존함은 머플러로 감싸져 있다.','보존함을 감싼 <span class="hl">머플러의 세탁 라벨</span>을 찾아, 감식 규정 제5조 암호표에서 같은 기호를 찾아라. 라벨에 표시된 순서(왼쪽부터)대로 읽는다.','라벨에 적힌 글자·숫자는 비밀번호가 아니다.',
            '보존함을 연 비밀번호를 이 단말기에도 입력하라.'],
     answer:'408', ok:'보존함 개봉 확인. 마지막 지시를 전송한다.' },
-  { code:'M-03', tag:'MISSION 03 // RESIDUE CROSS-MATCH', title:'침입자가 마신 음료', track:'잔류 성분 대조',
-    lines:['보존함 속 <span class="hl">잔여액 분석 결과서</span>를 확인하라.','분석대 위 음료 표본 6개의 영양정보와 대조해 같은 조건의 표본을 모두 찾아라. 표본마다 영양정보의 기준이 다르니 주의하라.',
-           '찾은 표본의 로고를 자세히 보라. 숨은 숫자를 <span class="hl">표본 번호 순서대로</span> 이어라.','그 숫자를 <span class="hl">공통 수사 앱</span>에 입력하면 정식 증거를 받을 수 있다.'],
+  { code:'CH.3', tag:'CH.3 // RESIDUE CROSS-MATCH', title:'침입자가 마신 음료', track:'침입자가 마신 음료',
+    lines:['보존함 속 <span class="hl">잔여액 분석 결과서</span>를 확인하라.','분석대 위 음료 표본 6개의 영양정보와 대조해 같은 조건의 표본을 모두 찾아라. 표본마다 영양정보의 기준(100mL당 · 1캔당 · 1회 제공량당 · 총 내용량당)이 다르니 모두 1mL당으로 바꿔 비교하라.',
+           '찾은 표본의 로고를 자세히 보라. 숨은 숫자를 <span class="hl">표본 번호 순서대로</span> 이어라.','그 4자리 숫자가 <span class="hl">가정실 최종 코드</span>다. <span class="hl">공통 수사 앱</span>에 입력하면 선생님이 정식 증거 봉투를 건넨다.'],
     final:true }
 ];
 var LOCKERS = [ ['손수건','HANDKERCHIEF · UV'], ['증거 보존함','EVIDENCE SEAL · 408'], ['음료 표본 6종','RESIDUE SAMPLES'] ];
@@ -479,7 +481,7 @@ function renderSide(){
   $('errs').textContent=st.wrong.reduce(function(a,b){return a+b},0);
 }
 function showBriefing(){
-  renderSide(); $('mtag').textContent='BRIEFING // CASE #UG-1215'; $('mtitle').textContent='사건 브리핑'; $('act').innerHTML='';
+  renderSide(); $('mtag').textContent='BRIEFING // CASE 1926-14'; $('mtitle').textContent='사건 브리핑'; $('act').innerHTML='';
   say(BRIEFING.map(strip).join(' '));
   typeHTML($('msg'),BRIEFING,function(){ $('act').innerHTML='<button class="btn" id="go">첫 번째 지시 수신 ▶</button>'; $('go').onclick=function(){ st.briefed=true; saveS(); render(); }; });
 }
@@ -783,8 +785,8 @@ function buildTC(){
    '<h3>① 전체 흐름 빠르게 보기 (카메라 없이, 5분)</h3><ol>'+
    '<li><b class="c">진행 조작</b> 탭 → <b class="y">데모 모드로 다시 열기</b> (카메라 대신 [데모 스캔] 버튼이 나옵니다)</li>'+
    '<li>반 선택 → 지문 센서를 길게 누르기 → 브리핑 → <b class="c">첫 번째 지시 수신</b></li>'+
-   '<li>미션 1: [UV 스캐너 가동] → [데모 스캔] → 얼룩 ㉠~㉣ 확인 → <b class="y">3524</b> 입력 (일부러 틀린 번호도 넣어 ACCESS DENIED 확인)</li>'+
-   '<li>미션 2: <b class="y">408</b> 입력 → 미션 3 지시 확인 → [지시 확인 완료] → 완료 화면</li>'+
+   '<li>CH.1: [UV 스캐너 가동] → [데모 스캔] → 얼룩 ㉠~㉣ 확인 → <b class="y">3524</b> 입력 (일부러 틀린 번호도 넣어 ACCESS DENIED 확인)</li>'+
+   '<li>CH.2: <b class="y">408</b> 입력 → CH.3 지시 확인 → [지시 확인 완료] → 완료 화면</li>'+
    '<li>중간 화면만 보고 싶으면 <b class="c">진행 조작</b> 탭의 <b class="y">미션 바로가기</b>를 쓰세요.</li></ol>'+
    '<h3>② AR(카메라) 시험 — 인쇄 전에도 가능</h3><ol>'+
    '<li>다른 기기(휴대폰·PC)에서 이 주소를 열고 콘솔의 <b class="c">인식 카드</b> 탭에서 손수건·신분증 카드를 화면에 띄웁니다. (인쇄한 카드가 있으면 그것을 사용)</li>'+
@@ -798,21 +800,21 @@ function buildTC(){
    '<li>콘솔 → <b class="c">진행 조작</b> → <b class="r" style="color:#ff8fa3">이 태블릿 초기화</b> → 다음 모둠 입장</li></ol>'+
    '<h3>④ 수업 중 문제가 생기면</h3><ul>'+
    '<li>신분증 인식이 안 됨 → 로그인 화면 아래 [수동 입장] 또는 콘솔에서 반·모둠을 직접 지정</li>'+
-   '<li>UV 스캐너가 안 켜짐 → 백업 UV 결과 카드를 주거나, 콘솔에서 <b class="y">미션 2로 건너뛰기</b></li>'+
+   '<li>UV 스캐너가 안 켜짐 → 백업 UV 결과 카드를 주거나, 콘솔에서 <b class="y">CH.2로 건너뛰기</b></li>'+
    '<li>앱이 이전 모둠 상태로 남아 있음 → <b class="r" style="color:#ff8fa3">이 태블릿 초기화</b></li>'+
    '<li>소리가 안 남 → 태블릿 무음 모드 해제, 화면 위 VOICE ON 확인</li></ul>'+
    '<p class="dim" style="font-size:13px">콘솔 비밀번호는 index.html 의 CONFIG(TEACHER_PIN)에서 바꿀 수 있습니다. 학생 앞에서는 입력하지 마세요.</p>';
 
   /* 2. 진행 조작 */
-  var stepName=['브리핑 / 미션 1','미션 2','미션 3','완료'][Math.min(st.step,3)];
+  var stepName=['브리핑 / CH.1','CH.2','CH.3','완료'][Math.min(st.step,3)];
   var w=st.wrong.reduce(function(a,b){return a+b},0), el=st.start?Math.floor(((st.end||Date.now())-st.start)/1000):0;
   $('tc-ctrl').innerHTML=
    '<h3>현재 이 태블릿 상태</h3><div class="tcgrid">'+
-   box('모둠',st.cls+'반 '+st.grp+'모둠')+box('진행 단계',stepName)+box('오답 (M1/M2/M3)',st.wrong.join(' / ')+'  · 합계 '+w)+box('경과 시간',Math.floor(el/60)+'분 '+(el%60)+'초')+box('모드',(AR?'AR 수업용':'데모 (카메라 없음)'))+'</div>'+
-   '<h3>반·모둠 직접 지정</h3><div class="tcbtns tcsel"><select id="tcCls">'+['A','B','C','D'].map(function(c){return '<option'+(c===st.cls?' selected':'')+'>'+c+'</option>'}).join('')+'</select> 반 '+
+   box('모둠',st.cls+'반 '+st.grp+'모둠')+box('진행 단계',stepName)+box('오답 (CH.1/CH.2/CH.3)',st.wrong.join(' / ')+'  · 합계 '+w)+box('경과 시간',Math.floor(el/60)+'분 '+(el%60)+'초')+box('모드',(AR?'AR 수업용':'데모 (카메라 없음)'))+'</div>'+
+   '<h3>반·모둠 직접 지정</h3><div class="tcbtns tcsel"><select id="tcCls">'+['1','2','3','4'].map(function(c){return '<option'+(c===st.cls?' selected':'')+'>'+c+'</option>'}).join('')+'</select> 반 '+
    '<select id="tcGrp">'+['1','2','3','4','5'].map(function(c){return '<option'+(c===st.grp?' selected':'')+'>'+c+'</option>'}).join('')+'</select> 모둠 <button class="tb y" id="tcSetU">적용</button></div><div class="tcres" id="tcUres"></div>'+
    '<h3>미션 바로가기 (시험·막혔을 때)</h3><div class="tcbtns">'+
-   '<button class="tb" data-go="b">브리핑부터</button><button class="tb" data-go="0">미션 1 (UV)</button><button class="tb" data-go="1">미션 2 (408)</button><button class="tb" data-go="2">미션 3 (음료)</button><button class="tb" data-go="3">완료 화면</button></div>'+
+   '<button class="tb" data-go="b">브리핑부터</button><button class="tb" data-go="0">CH.1 (UV)</button><button class="tb" data-go="1">CH.2 (408)</button><button class="tb" data-go="2">CH.3 (음료)</button><button class="tb" data-go="3">완료 화면</button></div>'+
    '<h3>모드 바꿔 다시 열기</h3><div class="tcbtns"><button class="tb y" id="tcDemo">데모 모드로 다시 열기</button><button class="tb y" id="tcAR">AR 모드로 다시 열기</button></div>'+
    '<p class="dim" style="font-size:13px">진행 기록은 그대로 두고 처음 화면(로그인)부터 다시 엽니다.</p>'+
    '<h3>초기화</h3><div class="tcbtns"><button class="tb r" id="tcReset">이 태블릿 초기화 (다음 모둠 준비)</button></div>';
@@ -844,9 +846,9 @@ function buildTC(){
   /* 4. 정답·해설 */
   $('tc-ans').innerHTML='<table class="tctable"><tr><th>단계</th><th>정답</th><th>푸는 법</th></tr>'+
    '<tr><td>입장</td><td class="ans">신분증</td><td>모둠 신분증 카드(1~5)를 비추면 모둠 자동 인식 → 홍채 연출. 안 되면 [수동 입장]: 반·모둠 선택 + 지문 길게 누르기</td></tr>'+
-   '<tr><td>미션 1<br>UV 얼룩</td><td class="ans">3524</td><td>㉠ 식용유 → 3 주방세제 / ㉡ 김칫국물 → 5 세제·햇볕 / ㉢ 땀 → 2 찬물·세제 / ㉣ 껌 → 4 얼음<br>얼룩 번호 순(㉠→㉣)으로 3 · 5 · 2 · 4<br><span class="dim">막다른 길: 제거법 1·6·7·8 (땀에 뜨거운 물을 쓰면 얼룩이 굳음)</span></td></tr>'+
-   '<tr><td>미션 2<br>세탁 라벨</td><td class="ans">408</td><td>머플러 라벨 기호(물세탁 금지 · 염소표백 금지 · 다림질 80~120℃)를 암호표에서 찾아 <b>라벨 표시 순서대로</b> 4 · 0 · 8. 보존함(금고 통) 비밀번호와 같음<br><span class="dim">함정: 라벨의 "아크릴 100%"</span></td></tr>'+
-   '<tr><td>미션 3<br>음료 대조</td><td class="ans">4171</td><td>잔여액 분석 결과서 조건과 같은 표본을 찾고(기준량 환산 주의) 로고 속 숨은 숫자를 표본 번호 순서대로 이음. 이 숫자는 <b>공통 수사 앱</b>에 입력 → 증거 #05 봉투</td></tr></table>'+
+   '<tr><td>CH.1<br>UV 얼룩</td><td class="ans">3524</td><td>㉠ 식용유 → 3 주방세제 / ㉡ 김칫국물 → 5 세제·햇볕 / ㉢ 땀 → 2 찬물·세제 / ㉣ 껌 → 4 얼음<br>얼룩 번호 순(㉠→㉣)으로 3 · 5 · 2 · 4<br><span class="dim">막다른 길: 제거법 1·6·7·8 (땀에 뜨거운 물을 쓰면 얼룩이 굳음)</span></td></tr>'+
+   '<tr><td>CH.2<br>세탁 라벨</td><td class="ans">408</td><td>머플러 라벨 기호(물세탁 금지 · 염소표백 금지 · 다림질 80~120℃)를 암호표에서 찾아 <b>라벨 표시 순서대로</b> 4 · 0 · 8. 보존함(금고 통) 비밀번호와 같음<br><span class="dim">함정: 라벨의 "아크릴 100%"</span></td></tr>'+
+   '<tr><td>CH.3<br>음료 대조</td><td class="ans">4171</td><td>잔여액 분석 결과서 조건과 같은 표본을 찾고(기준량 환산 주의) 로고 속 숨은 숫자를 표본 번호 순서대로 이음. 이 숫자는 <b>공통 수사 앱</b>에 입력 → 증거 #05 봉투</td></tr></table>'+
    '<p class="dim" style="font-size:13px;margin-top:10px">학생 화면에 정답이 보이지 않도록, 확인 후 바로 콘솔을 닫으세요.</p>';
 
   /* 5. 인식 카드 */
