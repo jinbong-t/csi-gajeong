@@ -98,14 +98,20 @@ button{font-family:inherit}
 .mtag{font-family:var(--mono);font-size:12px;letter-spacing:.22em;color:var(--line)}
 .mtitle{font-size:clamp(22px,3vw,30px);font-weight:900;margin:6px 0 12px;letter-spacing:.02em}
 .stamp{position:absolute;right:18px;top:18px;border:3px solid var(--bad);color:var(--bad);font-family:var(--disp);font-weight:900;letter-spacing:.2em;padding:4px 10px;transform:rotate(8deg);opacity:.75;font-size:13px}
-.msg{font-size:17px;line-height:1.85;min-height:120px}
+.msg{font-size:17px;line-height:1.85;min-height:120px;flex-shrink:0}
 .msg p{margin:0 0 6px}
 .msg .hl{color:var(--line);font-weight:700}
 .cur{display:inline-block;width:9px;height:17px;background:var(--line);vertical-align:-3px;animation:blink .8s steps(1) infinite}
-.act{margin-top:14px}
+.act{margin-top:14px;flex-shrink:0}
+.hintw{margin-top:16px;border-top:1px dashed rgba(25,227,255,.25);padding-top:12px}
+.hintb{font-family:var(--kr);font-size:14px;font-weight:700;color:#ffd166;background:rgba(255,209,102,.08);border:1px solid rgba(255,209,102,.55);padding:8px 14px;cursor:pointer}
+.hintb:disabled{opacity:.45;cursor:default}
+.hintc{margin-top:10px;padding:10px 12px;border-left:3px solid #ffd166;background:rgba(255,209,102,.07);font-size:15px;line-height:1.7}
+.hintc span{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:#ffd166;margin-bottom:2px}
 .btn{font-family:var(--kr);font-weight:900;font-size:16px;letter-spacing:.04em;border:1px solid var(--line);color:#001a22;background:var(--line);padding:14px 22px;cursor:pointer;
   clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px);box-shadow:0 0 20px rgba(25,227,255,.45)}
-.btn.uv{background:var(--uv);border-color:var(--uv);color:#fff;box-shadow:0 0 26px rgba(155,92,255,.7)}
+.btn.uv{background:rgba(155,92,255,.18);border-color:var(--uv);color:#e6d6ff;box-shadow:0 0 8px rgba(155,92,255,.35);padding:10px 18px;font-size:15px}
+.btn.uv:hover{background:rgba(155,92,255,.32)}
 .btn.ghost{background:transparent;color:var(--line)}
 /* 키패드 */
 .kp{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start;margin-top:16px}
@@ -154,8 +160,9 @@ button{font-family:inherit}
 .uvtop{position:absolute;left:0;right:0;top:0;display:flex;align-items:center;gap:10px;padding:12px 16px;background:linear-gradient(180deg,rgba(10,4,24,.9),transparent);z-index:3}
 .uvtop .t{font-family:var(--disp);letter-spacing:.2em;color:#d9c2ff;font-size:14px}
 .uvtop .sp{flex:1}
-.uvstage{position:absolute;inset:60px 300px 20px 20px;display:flex;align-items:center;justify-content:center}
-.uvstage svg{max-width:100%;max-height:100%}
+.uvstage{position:absolute;inset:70px 320px 40px 40px;display:flex;align-items:center;justify-content:center}
+.uvstage svg{width:min(100%,600px);height:auto;max-height:100%;border-radius:4px;box-shadow:0 0 0 1px rgba(201,167,255,.45),0 0 36px rgba(155,92,255,.3)}
+#uv:not(.ar) .uvhud .br,#uv:not(.ar) .uvhud .cross{display:none}
 .uvside{position:absolute;right:14px;top:64px;bottom:14px;width:280px;overflow:auto;z-index:3;display:flex;flex-direction:column;gap:8px}
 .scanpct{font-family:var(--mono);font-size:12px;color:#d9c2ff;letter-spacing:.14em}
 .scanbar{height:4px;background:rgba(201,167,255,.2)}.scanbar i{display:block;height:100%;width:0;background:#d9c2ff;box-shadow:0 0 10px #9b5cff}
@@ -234,7 +241,7 @@ button{font-family:inherit}
 .tcflag{position:fixed;top:8px;left:50%;transform:translateX(-50%);z-index:97;background:var(--warn);color:#1a1200;font-weight:900;font-size:13px;padding:6px 12px;border-radius:4px;display:none;cursor:pointer}
 /* 반응형 */
 @media (max-width:1000px){ .grid{grid-template-columns:1fr;overflow:auto} .col.side{display:grid;grid-template-columns:1fr 1fr} .log{min-height:110px} }
-@media (max-width:820px){ .uvstage{inset:60px 12px 46% 12px} .uvside{left:12px;right:12px;width:auto;top:auto;height:44%} .col.side{grid-template-columns:1fr} }
+@media (max-width:820px){ .dossier{overflow:visible;flex:none;min-height:auto} .uvstage{inset:64px 16px 46% 16px} .uvside{left:12px;right:12px;width:auto;top:auto;height:44%} .col.side{grid-template-columns:1fr} }
 </style>
 </head>
 <body>
@@ -372,6 +379,13 @@ var MISSIONS = [
            '찾은 표본의 로고를 자세히 보라. 숨은 숫자를 <span class="hl">표본 번호 순서대로</span> 이어라.','그 4자리 숫자가 <span class="hl">가정실 최종 코드</span>다. <span class="hl">공통 수사 앱</span>에 입력하면 선생님이 정식 증거 봉투를 건넨다.'],
     final:true }
 ];
+var HINTS = [
+  ['얼룩의 색과 느낌(번들거림 · 색깔 · 테두리 · 끈적함)으로 무엇이 묻었는지 먼저 정하세요. 매뉴얼의 [처리 원리]와 [금지 사항]을 함께 읽으면 쓰면 안 되는 방법을 지울 수 있어요.',
+   '㉠은 기름, ㉡은 김칫국물, ㉢은 땀, ㉣은 껌이에요. 기름은 세제로, 껌은 굳혀서, 땀은 찬물로 떠올려 보세요. (땀은 뜨거운 물에 굳어요!)'],
+  ['보존함을 감싼 머플러 안쪽 라벨을 찾으세요. 라벨 기호와 똑같은 그림을 암호표에서 찾아야 해요.',
+   '라벨 기호는 왼쪽부터 물세탁 금지, 염소표백 금지, 다림질 80~120℃예요. 라벨에 적힌 글자·숫자(아크릴 100% 등)는 비밀번호가 아니에요.'],
+  ['CH.3 힌트는 <b>공통 수사 앱</b>의 [수사 본부 통신]에서 받을 수 있어요. (힌트를 쓰면 점수가 깎여요)']
+];
 var LOCKERS = [ ['손수건','HANDKERCHIEF · UV'], ['증거 보존함','EVIDENCE SEAL · 408'], ['음료 표본 6종','RESIDUE SAMPLES'] ];
 /* 얼룩 ㉠~㉣: 손수건 카드(800×600) 위 위치·크기, 감식 문구 (번호 순으로 읽음) */
 var STAINS = [
@@ -388,7 +402,7 @@ var UNIT_COLORS = ['#19e3ff','#33ffa6','#ffcc33','#ff5ad8','#b388ff'];
 
 var q=new URLSearchParams(location.search), AR=q.get('ar')==='1';
 if(q.get('reset')==='1'){ try{localStorage.removeItem('csi-state')}catch(e){} }
-var st=loadS()||{step:0,wrong:[0,0,0],start:0,cls:'A',grp:'1',done:[]};
+var st=loadS()||{step:0,wrong:[0,0,0],start:0,cls:'1',grp:'1',done:[]};
 function loadS(){try{return JSON.parse(localStorage.getItem('csi-state'))}catch(e){return null}}
 function saveS(){try{localStorage.setItem('csi-state',JSON.stringify(st))}catch(e){}}
 function $(i){return document.getElementById(i)}
@@ -485,6 +499,9 @@ function showBriefing(){
   say(BRIEFING.map(strip).join(' '));
   typeHTML($('msg'),BRIEFING,function(){ $('act').innerHTML='<button class="btn" id="go">첫 번째 지시 수신 ▶</button>'; $('go').onclick=function(){ st.briefed=true; saveS(); render(); }; });
 }
+function showHints(){ var hs=HINTS[st.step]||[], n=((st.hint||[])[st.step])||0, b=$('hintBtn'), box=$('hintBox'); if(!b||!box) return;
+  box.innerHTML=hs.slice(0,n).map(function(t,i){ return '<div class="hintc"><span>HINT '+(i+1)+(hs.length>1?' / '+hs.length:'')+'</span>'+t+'</div>'; }).join('');
+  if(n>=hs.length){ b.disabled=true; b.textContent='💡 힌트를 모두 열었어요'; } else b.textContent=n?'💡 다음 힌트 ('+(n+1)+'/'+hs.length+')':'💡 힌트 요청'+(hs.length>1?' (1/'+hs.length+')':''); }
 function render(){
   renderSide();
   if(st.step>=3){ return finale(); }
@@ -497,7 +514,9 @@ function render(){
     if(m.uv) h+='<button class="btn uv" id="openUV">◉ UV 스캐너 가동</button>';
     if(m.answer) h+=keypadHTML(m.answer.length);
     if(m.final) h+='<div style="margin-top:6px"><button class="btn" id="fin">지시 확인 완료 ▶</button></div>';
-    $('act').innerHTML=h;
+    h+='<div class="hintw"><button class="hintb" id="hintBtn">💡 힌트 요청</button><div id="hintBox"></div></div>';
+    $('act').innerHTML=h; showHints();
+    $('hintBtn').onclick=function(){ var hs=HINTS[st.step]||[], n=(st.hint=st.hint||[])[st.step]||0; if(n>=hs.length) return; st.hint[st.step]=n+1; saveS(); log('hint '+m.code+' #'+(n+1)+' requested','w'); showHints(); var hb=$('hintBox'); if(hb&&hb.lastChild) hb.lastChild.scrollIntoView({behavior:'smooth',block:'nearest'}); };
     if(m.uv) $('openUV').onclick=openUV;
     if(m.answer) bindKeypad(m);
     if(m.final) $('fin').onclick=function(){ st.step=3; st.end=Date.now(); saveS(); log('final directive acknowledged','ok'); render(); };
@@ -810,7 +829,7 @@ function buildTC(){
   var w=st.wrong.reduce(function(a,b){return a+b},0), el=st.start?Math.floor(((st.end||Date.now())-st.start)/1000):0;
   $('tc-ctrl').innerHTML=
    '<h3>현재 이 태블릿 상태</h3><div class="tcgrid">'+
-   box('모둠',st.cls+'반 '+st.grp+'모둠')+box('진행 단계',stepName)+box('오답 (CH.1/CH.2/CH.3)',st.wrong.join(' / ')+'  · 합계 '+w)+box('경과 시간',Math.floor(el/60)+'분 '+(el%60)+'초')+box('모드',(AR?'AR 수업용':'데모 (카메라 없음)'))+'</div>'+
+   box('모둠',st.cls+'반 '+st.grp+'모둠')+box('진행 단계',stepName)+box('오답 (CH.1/CH.2/CH.3)',st.wrong.join(' / ')+'  · 합계 '+w)+box('힌트 (CH.1/CH.2)',((st.hint||[])[0]||0)+' / '+((st.hint||[])[1]||0))+box('경과 시간',Math.floor(el/60)+'분 '+(el%60)+'초')+box('모드',(AR?'AR 수업용':'데모 (카메라 없음)'))+'</div>'+
    '<h3>반·모둠 직접 지정</h3><div class="tcbtns tcsel"><select id="tcCls">'+['1','2','3','4'].map(function(c){return '<option'+(c===st.cls?' selected':'')+'>'+c+'</option>'}).join('')+'</select> 반 '+
    '<select id="tcGrp">'+['1','2','3','4','5'].map(function(c){return '<option'+(c===st.grp?' selected':'')+'>'+c+'</option>'}).join('')+'</select> 모둠 <button class="tb y" id="tcSetU">적용</button></div><div class="tcres" id="tcUres"></div>'+
    '<h3>미션 바로가기 (시험·막혔을 때)</h3><div class="tcbtns">'+
