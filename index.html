@@ -15,7 +15,7 @@
         index.html?ar=1       AR 모드 (신분증 카드로 로그인 → 모둠 자동 인식, 손수건 카드 UV 감식)
         index.html?reset=1    이 태블릿 진행 기록 초기화 (교사용)
         index.html?teacher=1  교사용 콘솔 바로 열기
-  교사  왼쪽 AGENT 아래 [교사 콘솔] 버튼(로그인 화면은 KCSI 제목 5번) → 교사용 콘솔 (비밀번호: CONFIG의 TEACHER_PIN)
+  교사  왼쪽 AGENT 칸 오른쪽 아래 'ADMIN ›'(로그인 화면은 KCSI 제목 5번) → 교사용 콘솔 (비밀번호: CONFIG의 TEACHER_PIN)
   초기화 화면 왼쪽 위 KCSI 로고 5번 연속 터치 → [초기화] 한 번 (이 태블릿 진행 기록 삭제)
   ★ 문구·정답은 CONFIG 부분만 고치면 됩니다.
 -->
@@ -109,8 +109,9 @@ button{font-family:inherit}
 .cbox .cb{font-size:19px;font-weight:900;line-height:1.5;color:#fff}.cbox .cb b{color:#ffd166}
 .cbox ol{margin:10px 0 0;padding-left:22px;font-size:15px;line-height:1.8}.cbox ol b{color:var(--line)}
 .cbox .chint{margin-top:10px;padding-top:10px;border-top:1px dashed rgba(255,209,102,.4);font-size:14px;line-height:1.7}.cbox .chint span{color:var(--dim);font-size:12px}
-.tcbtn{width:100%;margin-top:8px;font-family:var(--kr);font-size:13px;font-weight:700;color:var(--dim);background:transparent;border:1px dashed rgba(25,227,255,.35);padding:8px;cursor:pointer;letter-spacing:.05em}
-.tcbtn:hover{color:var(--line);border-color:var(--line)}
+.agrow{display:flex;justify-content:space-between;align-items:center}
+.adm{font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--dim);opacity:.55;cursor:pointer;padding:2px 0}
+.adm:hover{opacity:1;color:var(--line)}
 #qreset{position:fixed;inset:0;z-index:200;background:rgba(0,6,14,.82);display:flex;align-items:center;justify-content:center}
 #qreset .qbox{background:#06182a;border:2px solid #ff5c7a;padding:22px 24px;max-width:380px;width:90%;text-align:center}
 #qreset .qt{font-size:22px;font-weight:900;color:#ff8fa3;margin-bottom:8px}#qreset .qd{font-size:14px;line-height:1.6;color:#cfe;margin-bottom:16px}
@@ -292,8 +293,7 @@ button{font-family:inherit}
       <div class="pnl"><div class="ph"><span>MISSION TRACK</span><span id="trk">0/3</span></div><div class="track" id="track"></div></div>
       <div class="pnl"><div class="ph"><span>AGENT</span><span>ONLINE</span></div>
         <div class="agent">UNIT <b id="unit">-</b><br>ELAPSED</div><div class="big-time" id="elapsed">00:00</div>
-        <div class="agent">ERRORS <b id="errs">0</b></div></div>
-      <button class="tcbtn" id="tcOpenBtn">🔒 교사 콘솔</button>
+        <div class="agent agrow"><span>ERRORS <b id="errs">0</b></span><span class="adm" id="tcOpenBtn">ADMIN ›</span></div></div>
     </div>
     <div class="col">
       <div class="pnl dossier" id="dossier">
@@ -412,7 +412,7 @@ var STAINS = [
   {k:'㉢', sp:'디귿', s:'sweat',  x:375, y:238, w:170, c:'#f7e36b', d:'누런 테두리. 염분·단백질 성분 검출.'},
   {k:'㉣', sp:'리을', s:'gum',    x:175, y:400, w:150, c:'#ff5ad8', d:'섬유 사이에 끈적하게 엉겨 붙음. 고무·당류 성분 검출.'}
 ];
-/* 교사용 콘솔 비밀번호 (AGENT 아래 [교사 콘솔] 버튼 · 로그인 화면 제목 5번 · 주소 뒤 ?teacher=1) */
+/* 교사용 콘솔 비밀번호 (AGENT 칸의 ADMIN › · 로그인 화면 제목 5번 · 주소 뒤 ?teacher=1) */
 var TEACHER_PIN = '1120';
 /* 모둠 신분증 색 (1~5모둠) */
 var UNIT_COLORS = ['#19e3ff','#33ffa6','#ffcc33','#ff5ad8','#b388ff'];
@@ -791,7 +791,7 @@ function stopAR(){ wantMode=''; var sc=document.querySelector('a-scene'); try{ i
   Array.prototype.forEach.call(document.querySelectorAll('[mindar-image-target]'),function(el){ if(el.object3D) el.object3D.visible=false; }); $('arwrap').style.display='none'; }
 
 /* ======================= 교사용 콘솔 =======================
-   열기: 왼쪽 AGENT 아래 [교사 콘솔] 버튼 / 로그인 화면 KCSI 제목 5번 터치 / 주소 뒤 ?teacher=1 · 빠른 초기화: KCSI 로고 5번 → [초기화]
+   열기: 왼쪽 AGENT 칸 오른쪽 아래 'ADMIN ›' / 로그인 화면 KCSI 제목 5번 터치 / 주소 뒤 ?teacher=1 · 빠른 초기화: KCSI 로고 5번 → [초기화]
    비밀번호는 CONFIG의 TEACHER_PIN (학생 화면에 보이지 않게 관리) */
 var tcOK=false, tcTest='', tcForceAR=false, tcCamStream=null, tcCardIdx=0;
 function quickReset(){
