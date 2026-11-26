@@ -103,7 +103,10 @@ button{font-family:inherit}
 .msg p{margin:0 0 6px}
 .msg .hl{color:var(--line);font-weight:700}
 .cur{display:inline-block;width:9px;height:17px;background:var(--line);vertical-align:-3px;animation:blink .8s steps(1) infinite}
-.act{margin-top:14px;flex-shrink:0}
+.act{margin-top:14px;flex-shrink:0;display:flex;flex-wrap:wrap;gap:12px 18px;align-items:flex-start}
+.act>.cbox,.act>div[style]{flex-basis:100%}
+.act>.hintw{flex:1 1 230px;margin-top:0!important;border-top:0!important;border-left:1px dashed rgba(25,227,255,.25);padding:0 0 0 14px!important}
+.act>.hintw .hintc:first-of-type{margin-top:8px}
 .cbox{margin-top:6px;border:2px solid #ffd166;background:rgba(255,209,102,.08);padding:14px 16px;position:relative}
 .cbox .ch{font-family:var(--mono);font-size:12px;letter-spacing:.2em;color:#ffd166;margin-bottom:6px}
 .cbox .cb{font-size:19px;font-weight:900;line-height:1.5;color:#fff}.cbox .cb b{color:#ffd166}
@@ -254,8 +257,9 @@ button{font-family:inherit}
 #tcard .cbar button{background:#0b1e2d;color:#fff;border:0;padding:10px 16px;border-radius:4px;font-size:14px;font-weight:700}
 .tcflag{position:fixed;top:8px;left:50%;transform:translateX(-50%);z-index:97;background:var(--warn);color:#1a1200;font-weight:900;font-size:13px;padding:6px 12px;border-radius:4px;display:none;cursor:pointer}
 /* 반응형 */
-@media (max-width:1000px){ .grid{grid-template-columns:1fr;overflow:auto} .col.side{display:grid;grid-template-columns:1fr 1fr} .log{min-height:110px} }
-@media (max-width:820px){ .dossier{overflow:visible;flex:none;min-height:auto} .uvstage{inset:64px 16px 46% 16px} .uvside{left:12px;right:12px;width:auto;top:auto;height:44%} .col.side{grid-template-columns:1fr} }
+@media (max-width:1240px) and (min-width:1001px){ .grid{grid-template-columns:200px 1fr 230px} }
+@media (max-width:1000px){ .grid{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr);overflow:hidden} .grid>.col.side:first-child{display:grid;grid-template-columns:1fr 1fr;gap:10px} .grid>.col.side:last-child{display:none} .grid>.col:nth-child(2){min-height:0} }
+@media (max-width:820px){ .uvstage{inset:64px 16px 46% 16px} .uvside{left:12px;right:12px;width:auto;top:auto;height:44%} .col.side{grid-template-columns:1fr} }
 </style>
 </head>
 <body>
@@ -298,10 +302,10 @@ button{font-family:inherit}
     <div class="col">
       <div class="pnl dossier" id="dossier">
         <div class="stamp">CLASSIFIED</div>
-        <div class="mtag" id="mtag">BRIEFING</div>
+        <div id="dz"><div class="mtag" id="mtag">BRIEFING</div>
         <div class="mtitle" id="mtitle">-</div>
         <div class="msg" id="msg"></div>
-        <div class="act" id="act"></div>
+        <div class="act" id="act"></div></div>
       </div>
     </div>
     <div class="col side">
@@ -483,12 +487,12 @@ function grant(){
 /* ---------- 메인 ---------- */
 var typing=null;
 function typeHTML(el,lines,done){
-  clearInterval(typing); el.innerHTML=''; var li=0, ci=0, p=null, plain=lines.map(strip);
+  clearInterval(typing); el.innerHTML=''; if($('dz')) $('dz').style.zoom=1; var li=0, ci=0, p=null, plain=lines.map(strip);
   typing=setInterval(function(){
     if(li>=lines.length){ clearInterval(typing); if(done)done(); return; }
     if(!p){ p=document.createElement('p'); el.appendChild(p); }
     ci+=1; p.innerHTML=plain[li].slice(0,ci)+'<span class="cur"></span>';
-    if(ci>=plain[li].length){ p.innerHTML=lines[li]; li++; ci=0; p=null; }
+    if(ci>=plain[li].length){ p.innerHTML=lines[li]; li++; ci=0; p=null; fitDossier(); }
   },22);
 }
 function startApp(){
@@ -515,8 +519,11 @@ function renderSide(){
 function showBriefing(){
   renderSide(); $('mtag').textContent='BRIEFING // CASE 1926-14'; $('mtitle').textContent='사건 브리핑'; $('act').innerHTML='';
   say(BRIEFING.map(strip).join(' '));
-  typeHTML($('msg'),BRIEFING,function(){ $('act').innerHTML='<button class="btn" id="go">첫 번째 지시 수신 ▶</button>'; $('go').onclick=function(){ st.briefed=true; saveS(); render(); }; });
+  typeHTML($('msg'),BRIEFING,function(){ $('act').innerHTML='<button class="btn" id="go">첫 번째 지시 수신 ▶</button>'; fitDossier(); $('go').onclick=function(){ st.briefed=true; saveS(); render(); }; });
 }
+function fitDossier(){ var d=$('dossier'), z=$('dz'); if(!d||!z) return; z.style.zoom=1;
+  var H=d.clientHeight-30, h=z.scrollHeight; if(h>H&&H>100) z.style.zoom=Math.max(0.62,H/h); }
+window.addEventListener('resize',function(){ fitDossier(); });
 function showHints(){ var hs=HINTS[st.step]||[], n=((st.hint||[])[st.step])||0, b=$('hintBtn'), box=$('hintBox'); if(!b||!box) return;
   box.innerHTML=hs.slice(0,n).map(function(t,i){ return '<div class="hintc"><span>HINT '+(i+1)+(hs.length>1?' / '+hs.length:'')+'</span>'+t+'</div>'; }).join('');
   if(n>=hs.length){ b.disabled=true; b.textContent='💡 힌트를 모두 열었어요'; } else b.textContent=n?'💡 다음 힌트 ('+(n+1)+'/'+hs.length+')':'💡 힌트 요청'+(hs.length>1?' (1/'+hs.length+')':''); }
@@ -529,12 +536,12 @@ function render(){
   say(m.title+'. '+m.lines.map(strip).join(' '));
   typeHTML($('msg'),m.lines,function(){
     var h='';
-    if(m.uv) h+='<button class="btn uv" id="openUV">◉ UV 스캐너 가동</button>';
+    if(m.uv) h+='<button class="btn uv" id="openUV">◉ UV 스캐너 가동</button><div style="height:0"></div>';
     if(m.answer) h+=keypadHTML(m.answer.length);
     if(m.final) h+=COMMON_CALL+'<div style="margin-top:12px"><button class="btn" id="fin">확인했어요 · 공통 앱으로 이동 ▶</button></div>';
     if(!m.final) h+='<div class="hintw"><button class="hintb" id="hintBtn">💡 힌트 요청</button><div id="hintBox"></div></div>';
-    $('act').innerHTML=h; showHints();
-    if($('hintBtn')) $('hintBtn').onclick=function(){ var hs=HINTS[st.step]||[], n=(st.hint=st.hint||[])[st.step]||0; if(n>=hs.length) return; st.hint[st.step]=n+1; saveS(); log('hint '+m.code+' #'+(n+1)+' requested','w'); showHints(); var hb=$('hintBox'); if(hb&&hb.lastChild) hb.lastChild.scrollIntoView({behavior:'smooth',block:'nearest'}); };
+    $('act').innerHTML=h; showHints(); fitDossier();
+    if($('hintBtn')) $('hintBtn').onclick=function(){ var hs=HINTS[st.step]||[], n=(st.hint=st.hint||[])[st.step]||0; if(n>=hs.length) return; st.hint[st.step]=n+1; saveS(); log('hint '+m.code+' #'+(n+1)+' requested','w'); showHints(); fitDossier(); var hb=$('hintBox'); if(hb&&hb.lastChild) hb.lastChild.scrollIntoView({behavior:'smooth',block:'nearest'}); };
     if(m.uv) $('openUV').onclick=openUV;
     if(m.answer) bindKeypad(m);
     if(m.final) $('fin').onclick=function(){ st.step=3; st.end=Date.now(); saveS(); log('final directive acknowledged','ok'); render(); };
@@ -575,7 +582,7 @@ function finale(){
   var s=Math.floor(((st.end||Date.now())-st.start)/1000), w=st.wrong.reduce(function(a,b){return a+b},0);
   $('mtag').textContent='CASE FILE UPLOADED'; $('mtitle').textContent='가정실 감식 완료';
   $('msg').innerHTML='<p>모든 지시를 수행했다. 감식 시간 <span class="hl">'+Math.floor(s/60)+'분 '+(s%60)+'초</span>, 오답 '+w+'회.</p><p>이제 <span class="hl">공통 수사 앱</span>에 가정실 코드를 입력하고, 정식 증거 #05를 받아 수사 수첩에 기록하라.</p>';
-  $('act').innerHTML=COMMON_CALL; renderSide(); say('가정실 감식 완료. 최종 코드는 공통 수사 앱에 입력하라.');
+  $('act').innerHTML=COMMON_CALL; renderSide(); fitDossier(); say('가정실 감식 완료. 최종 코드는 공통 수사 앱에 입력하라.');
 }
 /* 기록 연동(선택): Firestore 등을 붙이려면 window.csiEmit 함수를 정의하세요 */
 function emit(type,val){ if(window.csiEmit) try{ window.csiEmit({cls:st.cls,grp:st.grp,step:st.step,type:type,val:val,ts:Date.now()}); }catch(e){} }
